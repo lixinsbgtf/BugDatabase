@@ -1,14 +1,29 @@
-1. Define a pointer of 'struct tm *' have to initialize the value of tm_idsf, otherwise the mktime() will use an indeterminate value and the consequence is undefined behavior.
+1. Define a pointer of 'struct tm *' have to initialize the value of tm_idsf, 
+      otherwise the mktime() will use an indeterminate value and the consequence is undefined behavior.
 
-2. Allocating memory Case 1 are somewhat bad, since allocating memory for small data structures (small typically means anything smaller than around 1KB, but it depends on the actual runtime environment, a watch with 64KB of RAM may have stricter requirements than a desktop machine with 16GB of RAM, and a mobile phone would be somewhere in between those, somewhat depending on what kind of phone it is). There are at least two reasons to avoid "small" memory allocations:
+2. Allocating memory Case 1 are somewhat bad, since allocating memory for small data structures 
+   (small typically means anything smaller than around 1KB, but it depends on the actual runtime 
+   environment, a watch with 64KB of RAM may have stricter requirements than a desktop machine with 16GB of RAM, and a mobile phone would be somewhere in between those, somewhat depending on what kind of phone it is). There are at least two reasons to avoid "small" memory allocations:
 
-   It takes more memory, since all known allocators use SOME extra memory to keep track of the actual "lump" of memory allocated.
-It takes extra time because new or calloc are much more complex than the allocation on the stack (in typical machines, allocating space on the stack takes 1-2 instructions above and beyond the same function with no variables at all, where a call to new or {c,m}alloc can be half a dozen just for the call and the same again for delete or free, and several dozen to a few thousand instructions inside those library functions - how long the code is depends largely on how it is implemented, and whether the runtime has some "memory available" or a call into the OS is required to "get some more memory" as well). And of course, you need to keep track of the allocation and not "leak" it. [There are C++ solutions to do that too, but I've written enough in this answer already to make it hard to follow]
-For case 2 you can use:
+   It takes more memory, since all known allocators use SOME extra memory to keep track of the 
+   actual "lump" of memory allocated. It takes extra time because new or calloc are much more complex 
+   than the allocation on the stack (in typical machines, allocating space on the stack takes 1-2 instructions
+   above and beyond the same function with no variables at all, where a call to new or {c,m}alloc can be half 
+   a dozen just for the call and the same again for delete or free, and several dozen to a few thousand 
+   instructions inside those library functions - how long the code is depends largely on how it is implemented, 
+   and whether the runtime has some "memory available" or a call into the OS is required to "get some more memory" 
+   as well). And of course, you need to keep track of the allocation and not "leak" it. [There are C++ solutions 
+   to do that too, but I've written enough in this answer already to make it hard to follow]
+
+   For case 2 you can use:
 
    struct tm start = {}; 
    (And again, you don't need to set zero-values for hour, min and sec)
 
-   In C++ it is correct to omit struct, since struct tm { ... }; declaration in the relevant header file makes the name tm represent the structure anyway - this applies for all struct and class names - only exception is if the same name is used in a different way, e.g. there's a function or variable called tm in the same context - in which case the compiler will give some error saying "don't understand what you mean by tm here" [exact wording varies depending on which compiler is used].
+   In C++ it is correct to omit struct, since struct tm { ... }; declaration in the relevant header file makes 
+   the name tm represent the structure anyway - this applies for all struct and class names - only exception is 
+   if the same name is used in a different way, e.g. there's a function or variable called tm in the same context 
+   - in which case the compiler will give some error saying "don't understand what you mean by tm here"
+   [exact wording varies depending on which compiler is used].
 
    Since the original question specifies BOTH C and C++, I've tried to explain.
